@@ -19,7 +19,6 @@ namespace ChatbotCobranzaMovil.Controllers
             var telefono = From;
             var mensaje = Body?.Trim().ToLower() ?? "";
 
-            // Si no hay conversación previa, la creamos
             if (!conversaciones.ContainsKey(telefono))
                 conversaciones[telefono] = new Conversacion();
 
@@ -55,18 +54,13 @@ namespace ChatbotCobranzaMovil.Controllers
                     estado.Motivo = mensaje;
 
                     var firebase = new ccFirebase20();
-                    var data = new
-                    {
-                        ruta = estado.Ruta,
-                        tipoPermiso = estado.TipoPermiso,
-                        motivo = estado.Motivo,
-                        fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-                    };
+                    string ruta = estado.Ruta;
+                    string tipo = estado.TipoPermiso == "reimpresion" ? "reimpresiones" : "cancelaciones";
 
-                    firebase.client.Set("Permisos/Ruta" + estado.Ruta + "/" + Guid.NewGuid(), data);
+                    firebase.client.Set($"Permisos/{ruta}/{tipo}", "1");
 
                     respuesta.Message("✅ Permiso otorgado exitosamente. ¡Hasta luego!");
-                    conversaciones.TryRemove(telefono, out _); // Eliminamos conversación
+                    conversaciones.TryRemove(telefono, out _);
                     break;
 
                 default:
