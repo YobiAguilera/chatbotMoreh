@@ -53,24 +53,33 @@ namespace ChatbotCobranzaMovil.Controllers
                 case 3:
                     estado.Motivo = mensaje;
 
-                    var firebase = new ccFirebase20();
-                    string ruta = estado.Ruta;
-                    string tipo = estado.TipoPermiso == "reimpresion" ? "reimpresiones" : "cancelaciones";
-                    string id = Guid.NewGuid().ToString();
-
-                    // Guardar la info completa en InfoPermisos
-                    var data = new
+                    try
                     {
-                        tipoPermiso = estado.TipoPermiso,
-                        fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                        motivo = estado.Motivo
-                    };
-                    firebase.client.Set($"InfoPermisos/{ruta}/{id}", data);
+                        var firebase = new ccFirebase20();
+                        string ruta = estado.Ruta;
+                        string tipo = estado.TipoPermiso == "reimpresion" ? "reimpresiones" : "cancelaciones";
+                        string id = Guid.NewGuid().ToString();
 
-                    // Activar el permiso en Permisos
-                    firebase.client.Set($"Permisos/{ruta}/{tipo}", "1");
+                        // Guardar la info completa en InfoPermisos
+                        var data = new
+                        {
+                            tipoPermiso = estado.TipoPermiso,
+                            fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                            motivo = estado.Motivo
+                        };
+                        firebase.client.Set($"InfoPermisos/{ruta}/{id}", data);
 
-                    respuesta.Message("✅ Permiso otorgado exitosamente. ¡Hasta luego!");
+                        // Activar el permiso en Permisos
+                        firebase.client.Set($"Permisos/{ruta}/{tipo}", "1");
+
+                        respuesta.Message("✅ Permiso otorgado exitosamente. ¡Hasta luego!");
+                    }
+                    catch (Exception ex)
+                    {
+                        respuesta.Message("⚠️ Ocurrió un error al otorgar el permiso. Intenta más tarde.");
+                        Console.WriteLine("Error Firebase: " + ex.Message);
+                    }
+
                     conversaciones.TryRemove(telefono, out _);
                     break;
 
@@ -82,6 +91,7 @@ namespace ChatbotCobranzaMovil.Controllers
 
             return Content(respuesta.ToString(), "application/xml");
         }
+
 
         public class Conversacion
         {
