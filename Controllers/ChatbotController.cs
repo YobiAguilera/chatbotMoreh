@@ -33,15 +33,28 @@ namespace ChatbotCobranzaMovil.Controllers
 
                 case 1:
                     estado.Ruta = mensaje.Replace("ruta", "").Trim();
-                    respuesta.Message("Si necesitas permiso para reimpresión escribe 1, o si necesitas permiso para cancelación, escribe 2:");
-                    estado.Paso = 2;
+                    if (!string.IsNullOrEmpty(estado.Ruta))
+                    {
+                        respuesta.Message("Si necesitas permiso para reimpresión escribe 1, o si necesitas permiso para cancelación, escribe 2:");
+                        estado.Paso = 2;
+                    }
+                    else
+                    {
+                        respuesta.Message("Por favor ingresa un número de ruta válido.");
+                    }
                     break;
 
                 case 2:
-                    if (mensaje == "1" || mensaje == "2")
+                    if (mensaje == "1")
                     {
-                        estado.TipoPermiso = mensaje == "1" ? "reimpresion" : "cancelacion";
-                        respuesta.Message("Explica el motivo:");
+                        estado.TipoPermiso = "reimpresion";
+                        respuesta.Message("Explica el motivo del permiso de reimpresión:");
+                        estado.Paso = 3;
+                    }
+                    else if (mensaje == "2")
+                    {
+                        estado.TipoPermiso = "cancelacion";
+                        respuesta.Message("Explica el motivo del permiso de cancelación:");
                         estado.Paso = 3;
                     }
                     else
@@ -76,13 +89,13 @@ namespace ChatbotCobranzaMovil.Controllers
                         }
                         else
                         {
-                            respuesta.Message("❌ Hubo un problema al otorgar el permiso. Intenta nuevamente.");
+                            respuesta.Message("❌ Ocurrió un problema al otorgar el permiso. Intenta nuevamente.");
                         }
                     }
                     catch (Exception ex)
                     {
-                        respuesta.Message("⚠️ Ocurrió un error al otorgar el permiso. Intenta más tarde.");
-                        Console.WriteLine("Error Firebase: " + ex.Message);
+                        respuesta.Message("⚠️ Ocurrió un error al conectar con Firebase.");
+                        Console.WriteLine("Firebase Error: " + ex.Message);
                     }
 
                     conversaciones.TryRemove(telefono, out _);
@@ -100,9 +113,9 @@ namespace ChatbotCobranzaMovil.Controllers
         public class Conversacion
         {
             public int Paso { get; set; } = 0;
-            public string Ruta { get; set; }
-            public string TipoPermiso { get; set; }
-            public string Motivo { get; set; }
+            public string Ruta { get; set; } = "";
+            public string TipoPermiso { get; set; } = "";
+            public string Motivo { get; set; } = "";
         }
     }
 }
