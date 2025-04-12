@@ -56,7 +56,18 @@ namespace ChatbotCobranzaMovil.Controllers
                     var firebase = new ccFirebase20();
                     string ruta = estado.Ruta;
                     string tipo = estado.TipoPermiso == "reimpresion" ? "reimpresiones" : "cancelaciones";
+                    string id = Guid.NewGuid().ToString();
 
+                    // Guardar la info completa en InfoPermisos
+                    var data = new
+                    {
+                        tipoPermiso = estado.TipoPermiso,
+                        fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                        motivo = estado.Motivo
+                    };
+                    firebase.client.Set($"InfoPermisos/{ruta}/{id}", data);
+
+                    // Activar el permiso en Permisos
                     firebase.client.Set($"Permisos/{ruta}/{tipo}", "1");
 
                     respuesta.Message("✅ Permiso otorgado exitosamente. ¡Hasta luego!");
